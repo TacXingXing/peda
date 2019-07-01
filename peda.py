@@ -1,10 +1,3 @@
-#       PEDA - Python Exploit Development Assistance for GDB
-#
-#       Copyright (C) 2012 Long Le Dinh <longld at vnsecurity.net>
-#
-#       License: see LICENSE file for details
-#
-
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -35,7 +28,6 @@ try:
     import six.moves.cPickle as pickle
 except ImportError:
     import pickle
-
 
 from skeleton import *
 from shellcode import *
@@ -984,8 +976,8 @@ class PEDA(object):
                 if "call" in opcode and search in opers:
                     result += [(addr, line.strip())]
                 if search_data:
-                     if "mov" in opcode and search in opers:
-                         result += [(addr, line.strip())]
+                    if "mov" in opcode and search in opers:
+                        result += [(addr, line.strip())]
 
         return result
 
@@ -1985,7 +1977,6 @@ class PEDA(object):
             except:
                 return None
 
-
     @memoized
     def is_executable(self, address, maps=None):
         """
@@ -2124,7 +2115,6 @@ class PEDA(object):
             return value
         else:
             return None
-
 
     def read_long(self, address):
         """
@@ -2616,7 +2606,6 @@ class PEDA(object):
 
         return text
 
-
     ##########################
     #     Exploit Helpers    #
     ##########################
@@ -2763,8 +2752,11 @@ class PEDA(object):
             else :
                 got_plt = _getgotplt(arch)
 
-                result = subprocess.check_output("objdump -d -j .plt.got " + procname +
+                try:
+                    result = subprocess.check_output("objdump -d -j .plt.got " + procname +
                     "| grep -A 31337 .plt.got",shell=True).decode('utf8')
+                except:
+                    return None
                 pltentry = result.split("\n")[2:]
                 # objdump < 2.29
                 if not '' in pltentry:
@@ -3430,7 +3422,6 @@ class PEDA(object):
             search = search[i:]
         return result
 
-
     ##############################
     #   ROP Payload Generation   #
     ##############################
@@ -3530,7 +3521,6 @@ class PEDA(object):
                 ])
 
         return text
-
 
 ###########################################################################
 class PEDACmd(object):
@@ -4937,6 +4927,9 @@ class PEDACmd(object):
         def recover_plt(text,arch):
             protection = peda.checksec()
             result = text
+            #msg(protection['RELRO'])
+            #msg(noplt)
+            
             if noplt is not None and (protection["RELRO"] == 3) and (arch == "elf32-i386" or arch == "elf64-x86-64"):
                 if len(noplt) == 0 :
                     peda.elfsymbols()
@@ -5262,19 +5255,6 @@ class PEDACmd(object):
             if "stack" not in opt :
                 self.context_stack(count)
 
-#        if "source" in opt or "SIGSEGV" in status:
-#            self.context_source(count)
-        # display registers
-#        if "reg" in opt or "register" in opt:
-#            self.context_register()
-
-        # display assembly code
-#        if "code" in opt:
-#            self.context_code(count)
-
-        # display stack content, forced in case SIGSEGV
-#        if "stack" in opt or "SIGSEGV" in status:
-#            self.context_stack(count)
         msg(separator(), "yellow")
         msg("Legend: %s, %s, %s, %s, value" % (red("code"), blue("data"), green("rodata"), purple("heap")))
 
@@ -7152,7 +7132,6 @@ class pedaGDBCommand(gdb.Command):
                     completion += [cmd]
         return completion
 
-
 ###########################################################################
 class Alias(gdb.Command):
     """
@@ -7191,7 +7170,6 @@ class Alias(gdb.Command):
                 completion = list(config.OPTIONS.keys())
         return completion
 
-
 ###########################################################################
 ## INITIALIZATION ##
 # global instances of PEDA() and PEDACmd()
@@ -7219,10 +7197,13 @@ def sigint_handler(signal, frame):
 signal.signal(signal.SIGINT, sigint_handler)
 
 # custom hooks
+# msg('xingxing')
+
 peda.define_user_command("hook-stop",
     "peda context\n"
     "session autosave"
     )
+
 
 # common used shell commands aliases
 shellcmds = ["man", "ls", "ps", "grep", "cat", "more", "less", "pkill", "clear", "vi", "nano"]
